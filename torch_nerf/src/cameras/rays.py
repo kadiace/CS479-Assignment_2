@@ -77,7 +77,16 @@ class RaySamples:
             coords: Coordinates of points sampled along rays in the ray bundle.
         """
         # TODO
-        raise NotImplementedError("Task 2")
+        origins = self.ray_bundle.origins  # Shape: torch.Size([2048, 3])
+        directions = self.ray_bundle.directions  # Shape: torch.Size([2048, 3])
+        t_samples = self.t_samples.to(device=origins.device)  # Shape: torch.Size([2048, 64])
+
+        origins = origins.unsqueeze(1)  # Shape: torch.Size([2048, 1, 3])
+        directions = directions.unsqueeze(1)  # Shape: torch.Size([2048, 1, 3])
+
+        coords = origins + t_samples.unsqueeze(-1) * directions
+
+        return coords
 
     @jaxtyped
     @typechecked

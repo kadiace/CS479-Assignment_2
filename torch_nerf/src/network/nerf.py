@@ -35,7 +35,40 @@ class NeRF(nn.Module):
         super().__init__()
 
         # TODO
-        raise NotImplementedError("Task 1")
+        self.mlp1 = nn.Sequential(
+            nn.Linear(pos_dim, feat_dim),  # Input layer
+            nn.ReLU(),
+            nn.Linear(feat_dim, feat_dim),  # Hidden layers
+            nn.ReLU(),
+            nn.Linear(feat_dim, feat_dim),  # Hidden layers
+            nn.ReLU(),
+            nn.Linear(feat_dim, feat_dim),  # Hidden layers
+            nn.ReLU(),
+            nn.Linear(feat_dim, feat_dim),  # Hidden layers
+            nn.ReLU(),
+        )
+
+        self.mlp2 = nn.Sequential(
+            nn.Linear(pos_dim + feat_dim, feat_dim),
+            nn.ReLU(),
+            nn.Linear(feat_dim, feat_dim),  # Hidden layers
+            nn.ReLU(),
+            nn.Linear(feat_dim, feat_dim),  # Hidden layers
+            nn.ReLU(),
+            nn.Linear(feat_dim, feat_dim),  # Hidden layers
+        )
+
+        self.density = nn.Sequential(
+            nn.Linear(feat_dim, 1),
+            nn.ReLU()
+        )
+
+        self.mlp3 = nn.Sequential(
+            nn.Linear(feat_dim + view_dir_dim, feat_dim//2),
+            nn.ReLU(),
+            nn.Linear(feat_dim//2, 3),
+            nn.Sigmoid()
+        )
 
     @jaxtyped
     @typechecked
@@ -60,4 +93,14 @@ class NeRF(nn.Module):
         """
 
         # TODO
-        raise NotImplementedError("Task 1")
+        # Concatenate pos and view_dir
+        x = self.mlp1(pos)
+        x = torch.concat([x, pos], dim = -1)
+        x = self.mlp2(x)
+
+        density = self.density(x)
+
+        x = torch.concat([view_dir, x], dim = -1)
+        color = self.mlp3(x)
+
+        return (density, color)

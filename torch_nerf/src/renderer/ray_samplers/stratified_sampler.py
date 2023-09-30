@@ -65,7 +65,14 @@ class StratifiedSampler(RaySamplerBase):
 
         # TODO
         # HINT: Freely use the provided methods 'create_t_bins' and 'map_t_to_euclidean'
-        raise NotImplementedError("Task 2")
+        near_bounds = ray_bundle.nears
+        far_bounds = ray_bundle.fars
+        num_ray = near_bounds.shape[0]
+
+        t_bins = self.create_t_bins(num_sample, device=near_bounds.device)
+        t_samples = self.map_t_to_euclidean(t_bins, float(near_bounds[0]), float(far_bounds[0])).expand(num_ray, -1).to(device = near_bounds.device)
+
+        return t_samples
 
     @jaxtyped
     @typechecked
