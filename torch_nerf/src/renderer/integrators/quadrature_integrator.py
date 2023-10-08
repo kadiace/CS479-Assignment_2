@@ -44,16 +44,17 @@ class QuadratureIntegrator(IntegratorBase):
         # TODO
         # HINT: Look up the documentation of 'torch.cumsum'.
         # Calculate opacity (alpha) for each sample
-        delta_ = delta.to(device = sigma.device)
-        alpha = 1 - torch.exp(-sigma * delta_)
+        delta_ = delta.to(device = sigma.device) # [num_ray, num_sample]
+        alpha = 1 - torch.exp(-sigma * delta_) + 1e-10 # [num_ray, num_sample]
 
         # Compute transmittance
-        transmittance = torch.exp(torch.cumsum(-sigma * delta_, dim=0))
+        transmittance = torch.exp(-torch.cumsum(sigma * delta_, dim=0)) + 1e-10 # [num_ray, num_sample]
 
         # Compute weights as the product of transmittance and alpha
-        weights = transmittance * alpha
+        weights = transmittance * alpha # [num_ray, num_sample]
 
         # Calculate the final pixel color (rgbs) by summing up weighted radiance values
-        rgbs = torch.sum(radiance * weights.unsqueeze(-1), dim=-2)
+        rgbs = torch.sum(radiance * weights.unsqueeze(2), dim=1) / torch.sum(weights, dim=1).unsqueeze(1)
+        rgbs = torch.clamp(rgbs, 0.0, 1.0)
 
         return rgbs, weights
