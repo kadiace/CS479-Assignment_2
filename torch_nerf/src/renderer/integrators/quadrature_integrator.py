@@ -45,7 +45,7 @@ class QuadratureIntegrator(IntegratorBase):
         # HINT: Look up the documentation of 'torch.cumsum'.
         # Calculate opacity (alpha) for each sample
         delta_ = delta.to(device = sigma.device) # [num_ray, num_sample]
-        alpha = 1 - torch.exp(-sigma * delta_)# [num_ray, num_sample]
+        alpha = 1 - torch.exp(-sigma * delta_) # [num_ray, num_sample]
 
         # Compute transmittance
         transmittance = torch.exp(-torch.cumsum(sigma * delta_, dim=1)) # [num_ray, num_sample]

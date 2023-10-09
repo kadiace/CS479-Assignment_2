@@ -54,16 +54,17 @@ class NeRF(nn.Module):
             nn.Linear(feat_dim, feat_dim),  # Hidden layers
             nn.ReLU(),
             nn.Linear(feat_dim, feat_dim),  # Hidden layers
-            nn.ReLU(),
-            nn.Linear(feat_dim, feat_dim),  # Hidden layers
+            nn.ReLU()
         )
+
+        self.mlp3 = nn.Linear(feat_dim, feat_dim)  # Hidden layers
 
         self.density = nn.Sequential(
             nn.Linear(feat_dim, 1),
             nn.ReLU()
         )
 
-        self.mlp3 = nn.Sequential(
+        self.mlp4 = nn.Sequential(
             nn.Linear(feat_dim + view_dir_dim, feat_dim//2),
             nn.ReLU(),
             nn.Linear(feat_dim//2, 3),
@@ -100,7 +101,8 @@ class NeRF(nn.Module):
 
         density = self.density(x)
 
+        x = self.mlp3(x)
         x = torch.concat([view_dir, x], dim = -1)
-        color = self.mlp3(x)
+        color = self.mlp4(x)
 
         return (density, color)
