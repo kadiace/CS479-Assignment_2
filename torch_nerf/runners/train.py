@@ -398,7 +398,9 @@ def main(cfg: DictConfig) -> None:
         scheduler,
     )
 
-    for epoch in tqdm(range(start_epoch, cfg.train_params.optim.num_iter // len(train_dataset))):
+    pbar = tqdm(range(start_epoch, cfg.train_params.optim.num_iter // len(train_dataset)))
+
+    for epoch in pbar:
 
         # train
         train_loss_dict = train_one_epoch(
@@ -413,6 +415,9 @@ def main(cfg: DictConfig) -> None:
             scheduler,
             fine_scene=fine_scene,
         )
+        
+        pbar.set_description("loss %.04f, fine_loss %.04f, coarse_loss %.04f" %(train_loss_dict['loss'], train_loss_dict['fine_loss'], train_loss_dict['coarse_loss']))
+
         for loss_name, value in train_loss_dict.items():
             writer.add_scalar(f"train/{loss_name}", value, epoch)
 
